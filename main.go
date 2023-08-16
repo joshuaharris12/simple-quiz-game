@@ -17,20 +17,20 @@ type QuestionAnswer struct {
 }
 
 func main() {
-	filename := flag.String("filename", "hello.csv", "Specify filename of csv file containing quiz questions")
+	filename := flag.String("filename", "problems.csv", "Specify filename of csv file containing quiz questions")
+	gameDuration := flag.Int("gameDuration", 30, "The duration the player has to answer all questions")
 	flag.Parse()
-
-	fmt.Println("flag was set to: ", *filename)
 
 	questions, err := readQuestions(*filename)
 	if err != nil {
 		return
 	}
-	run(questions)
+	run(questions, *gameDuration)
 }
 
-func readQuestions(fileName string) ([]QuestionAnswer, error) {
-	file, err := os.Open(fileName)
+func readQuestions(filename string) ([]QuestionAnswer, error) {
+	fmt.Println("Loading Questions from file: ", filename)
+	file, err := os.Open(filename)
 	if err != nil {
 		return nil, errors.New("File cannot be opened")
 	}
@@ -46,12 +46,13 @@ func readQuestions(fileName string) ([]QuestionAnswer, error) {
 	return questions, nil
 }
 
-func run(questions []QuestionAnswer) {
+func run(questions []QuestionAnswer, duration int) {
 	correct, incorrect := 0, 0
 	reader := bufio.NewReader(os.Stdin)
 
-	timer := time.NewTimer(10 * time.Second)
+	timer := time.NewTimer(time.Duration(duration) * time.Second)
 	defer timer.Stop()
+	fmt.Printf("You have %d seconds to complete all questions\n", duration)
 
 QuestionLoop:
 	for i, q := range questions {
